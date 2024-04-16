@@ -131,8 +131,53 @@ class MarkovChain:
     def initErgodic(self):
         pass
 
-    def forward(self):
-        pass
+    def forward(self, pX):
+      #pX is assummed to be n_states x n_observations matrix
+      #a_temp s the n_states x n_observations (or n_states x 1)
+      #c is nobservations x 1
+      #a_hat is n_states x n_observations
+      #initialization
+      if self.is_finite == True:
+
+        nStates, nObservations = np.shape(pX)
+        assert nStates == self.nStates
+        a_hat = np.ones((nStates, nObservations))
+        c = np.ones((nObservations + 1, 1))
+
+        a_temp = self.q * pX[:, 0]
+        c[0] = np.sum(a_temp)
+        a_hat[:,0] = a_temp / c[0]
+
+        #forward steps
+
+        for i in np.arange(1, nObservations):
+          a_temp = pX[:, i] * (a_hat[:,i-1] @ self.A[:,:-1])
+          c[i] = np.sum(a_temp)
+          a_hat[:,i] = a_temp / c[i]
+
+        #exit for finite 
+        c[nObservations] = a_hat[:,nObservations - 1] @ self.A[:,-1]
+        
+        return a_hat, c, a_temp
+
+      else:
+        nStates, nObservations = np.shape(pX)
+        assert nStates == self.nStates
+        a_hat = np.ones((nStates, nObservations))
+        c = np.ones((nObservations, 1))
+
+        a_temp = self.q * pX[:, 0]
+        c[0] = np.sum(a_temp)
+        a_hat[:,0] = a_temp / c[0]
+
+        #forward steps
+
+        for i in np.arange(1, nObservations):
+          a_temp = pX[:, i] * (a_hat[:,i-1] @ self.A[:,])
+          c[i] = np.sum(a_temp)
+          a_hat[:,i] = a_temp / c[i]
+        
+        return a_hat, c
 
     def finiteDuration(self):
         pass
