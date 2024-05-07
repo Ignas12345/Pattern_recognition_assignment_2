@@ -158,7 +158,7 @@ class MarkovChain:
         #exit for finite 
         c[nObservations] = a_hat[:,nObservations - 1] @ self.A[:,-1]
         
-        return a_hat, c, a_temp
+        return a_hat, c
 
       else:
         nStates, nObservations = np.shape(pX)
