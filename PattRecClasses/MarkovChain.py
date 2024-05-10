@@ -137,6 +137,7 @@ class MarkovChain:
       #c is nobservations x 1
       #a_hat is n_states x n_observations
       #initialization
+
       if self.is_finite == True:
 
         nStates, nObservations = np.shape(pX)
@@ -182,8 +183,31 @@ class MarkovChain:
     def finiteDuration(self):
         pass
     
-    def backward(self):
-        pass
+    def backward(self, c, pX):
+        nStates = self.nStates
+        nSamples = pX.shape[1]
+
+        # Initialize beta_hat
+        beta_hat = np.zeros((nStates, nSamples))
+
+        if self.is_finite:
+            beta_hat[:, -1] = self.A[:, -1]  #Initialize with transition probabilities to an absorbing state
+            #Normalize beta_hat for the last time step
+            beta_hat[:, -1] /= (c[-1] * c[-2])
+        else:
+            beta_hat[:, -1] = 1.0 / c[-1]
+
+        #Backward recursion
+        for t in range(nSamples - 2, -1, -1):
+            for i in range(nStates):
+                sum_products = 0
+                for j in range(nStates):
+                    sum_products += self.A[i, j] * pX[j, t + 1] * beta_hat[j, t + 1]
+                
+                #Update beta_hat at time t for state i
+                beta_hat[i, t] = sum_products / c[t]
+
+        return beta_hat
 
     def adaptStart(self):
         pass
